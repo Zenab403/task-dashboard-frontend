@@ -16,7 +16,7 @@ function App() {
     const fetchTasks = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/tasks`
+          `${process.env.REACT_APP_API_URL}/api/tasks`
         );
         setTasks(res.data);
       } catch (err) {
