@@ -52,3 +52,10 @@ Task list display with Material‑UI components
 Add, edit, delete tasks
 
 Responsive design for desktop and mobile
+
+# MERN Task Dashboard
+
+## Live Links
+- Frontend (Netlify): https://your-frontend.netlify.app
+- Backend (Render): https://task-dashboard-99ek.onrender.com/api/tasks
+
