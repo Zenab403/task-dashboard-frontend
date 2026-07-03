@@ -1,74 +1,69 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Button, Chip,
-  TextField, Select, MenuItem, Box, Typography
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Button, Chip, Dialog, DialogTitle, DialogContent,
+  TextField, DialogActions
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 
-function TaskList({ tasks, setTasks }) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+function TaskList({ tasks, onTaskUpdated, onTaskDeleted }) {
+  const [open, setOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [newTitle, setNewTitle] = useState("");
 
-  useEffect(() => {
-    axios.get("http://localhost:5000/tasks")
-      .then(res => setTasks(res.data))
-      .catch(err => console.error("Error fetching tasks:", err));
-  }, [setTasks]);
+  // Toggle status
+  const toggleStatus = async (task) => {
+    const newStatus = task.status === "Incomplete" ? "Complete" : "Incomplete";
+    try {
+      const res = await axios.put(`http://localhost:5000/tasks/${task._id}`, {
+        ...task,
+        status: newStatus,
+      });
+      onTaskUpdated(res.data);
+    } catch (err) {
+      console.error("Error updating task:", err);
+    }
+  };
 
-  const handleDelete = async (id) => {
+  // Delete task
+  const deleteTask = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/tasks/${id}`);
-      setTasks(tasks.filter(task => task._id !== id));
+      onTaskDeleted(id);
     } catch (err) {
       console.error("Error deleting task:", err);
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "Incomplete" ? "Complete" : "Incomplete";
+  // Open edit dialog
+  const handleEditOpen = (task) => {
+    setEditTask(task);
+    setNewTitle(task.title);
+    setOpen(true);
+  };
+
+  // Save edit
+  const handleEditSave = async () => {
+    if (!editTask) return;
     try {
-      const res = await axios.put(`http://localhost:5000/tasks/${id}`, { status: newStatus });
-      setTasks(tasks.map(task =>
-        task._id === id ? { ...task, status: res.data.status } : task
-      ));
+      const res = await axios.put(`http://localhost:5000/tasks/${editTask._id}`, {
+        ...editTask,
+        title: newTitle,
+      });
+      onTaskUpdated(res.data);
+      setOpen(false);
+      setEditTask(null);
+      setNewTitle("");
     } catch (err) {
-      console.error("Error updating status:", err);
+      console.error("Error editing task:", err);
     }
   };
 
-  // ✅ Safe filtering logic
-  const filteredTasks = (tasks || []).filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "All" || task.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>My Tasks</Typography>
-
-      {/* Search + Filter Controls */}
-      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <TextField
-          label="Search tasks"
-          variant="outlined"
-          size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          size="small"
-        >
-          <MenuItem value="All">All</MenuItem>
-          <MenuItem value="Incomplete">Incomplete</MenuItem>
-          <MenuItem value="Complete">Complete</MenuItem>
-        </Select>
-      </Box>
-
-      {/* Task Table */}
+    <>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -79,47 +74,76 @@ function TaskList({ tasks, setTasks }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredTasks.length > 0 ? (
-              filteredTasks.map(task => (
-                <TableRow key={task._id}>
-                  <TableCell>{task.title}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={task.status}
-                      color={task.status === "Complete" ? "success" : "warning"}
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleToggleStatus(task._id, task.status)}
-                      sx={{ mr: 1 }}
-                    >
-                      Toggle
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => handleDelete(task._id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} align="center">
-                  <Typography color="text.secondary">No tasks found</Typography>
+            {tasks.map((task) => (
+              <TableRow key={task._id}>
+                <TableCell
+                  sx={{
+                    textDecoration: task.status === "Complete" ? "line-through" : "none",
+                    color: task.status === "Complete" ? "text.secondary" : "text.primary",
+                  }}
+                >
+                  {task.title}
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={task.status}
+                    color={task.status === "Complete" ? "success" : "warning"}
+                    variant="outlined"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => toggleStatus(task)}
+                    sx={{ mr: 1 }}
+                  >
+                    <AutorenewIcon />
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleEditOpen(task)}
+                    sx={{ mr: 1 }}
+                  >
+                    <EditIcon />
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => deleteTask(task._id)}
+                  >
+                    <DeleteIcon />
+                  </Button>
                 </TableCell>
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+
+      {/* Edit Dialog */}
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Edit Task</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Task Title"
+            type="text"
+            fullWidth
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained" color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 
