@@ -15,7 +15,9 @@ function App() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/tasks");
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/tasks`
+        );
         setTasks(res.data);
       } catch (err) {
         console.error("Error fetching tasks:", err);
@@ -42,7 +44,9 @@ function App() {
       success: { main: "#00c853" },
       warning: { main: "#ff9800" },
     },
-    typography: { fontFamily: "Poppins, sans-serif" },
+    typography: {
+      fontFamily: "Poppins, sans-serif",
+    },
   });
 
   return (
@@ -52,9 +56,12 @@ function App() {
         <Paper
           elevation={4}
           sx={{
-            p: 3, mb: 4, borderRadius: 3,
+            p: 3,
+            mb: 4,
+            borderRadius: 3,
             background: "linear-gradient(135deg, #0052cc, #7b2ff7)",
-            color: "white", textAlign: "center",
+            color: "white",
+            textAlign: "center",
           }}
         >
           <Typography variant="h4" fontWeight="bold">Task Dashboard</Typography>
@@ -73,7 +80,8 @@ function App() {
             variant="determinate"
             value={completionPercentage}
             sx={{
-              height: 10, borderRadius: 5,
+              height: 10,
+              borderRadius: 5,
               backgroundColor: "#e0e0e0",
               "& .MuiLinearProgress-bar": { backgroundColor: "#00c853" },
             }}
