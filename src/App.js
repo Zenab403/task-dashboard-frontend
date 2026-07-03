@@ -1,24 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { createTheme, ThemeProvider, CssBaseline, Button } from "@mui/material";
+import TaskList from "./TaskList";
+import CreateTask from "./CreateTask";
 
 function App() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? "dark" : "light",
+      primary: { main: "#1976d2" },
+      secondary: { main: "#f50057" },
+    },
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <div style={{ padding: "20px" }}>
+        <h1>Task Dashboard</h1>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setDarkMode(!darkMode)}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
+          Toggle {darkMode ? "Light" : "Dark"} Mode
+        </Button>
+        <CreateTask />
+        <TaskList />
+      </div>
+    </ThemeProvider>
   );
 }
 
