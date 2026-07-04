@@ -6,12 +6,15 @@ function CreateTask({ onTaskAdded }) {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("Incomplete");
 
+  // Base API URL from environment variable
+  const API_URL = process.env.REACT_APP_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/tasks", {
+      const res = await axios.post(`${API_URL}/api/tasks`, {
         title,
         status,
       });
@@ -36,7 +39,7 @@ function CreateTask({ onTaskAdded }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         required
-        sx={{ width: "45%" }}   // 👈 reduced width so button aligns
+        sx={{ width: "45%" }} // 👈 reduced width so button aligns
       />
 
       {/* Status dropdown */}

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Button, Chip, Dialog, DialogTitle, DialogContent,
-  TextField, DialogActions
+  Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Button, Chip,
+  Dialog, DialogTitle, DialogContent, TextField, DialogActions
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -14,11 +14,14 @@ function TaskList({ tasks, onTaskUpdated, onTaskDeleted }) {
   const [editTask, setEditTask] = useState(null);
   const [newTitle, setNewTitle] = useState("");
 
+  // Base API URL from environment variable
+  const API_URL = process.env.REACT_APP_API_URL;
+
   // Toggle status
   const toggleStatus = async (task) => {
     const newStatus = task.status === "Incomplete" ? "Complete" : "Incomplete";
     try {
-      const res = await axios.put(`http://localhost:5000/tasks/${task._id}`, {
+      const res = await axios.put(`${API_URL}/api/tasks/${task._id}`, {
         ...task,
         status: newStatus,
       });
@@ -31,7 +34,7 @@ function TaskList({ tasks, onTaskUpdated, onTaskDeleted }) {
   // Delete task
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/tasks/${id}`);
+      await axios.delete(`${API_URL}/api/tasks/${id}`);
       onTaskDeleted(id);
     } catch (err) {
       console.error("Error deleting task:", err);
@@ -49,7 +52,7 @@ function TaskList({ tasks, onTaskUpdated, onTaskDeleted }) {
   const handleEditSave = async () => {
     if (!editTask) return;
     try {
-      const res = await axios.put(`http://localhost:5000/tasks/${editTask._id}`, {
+      const res = await axios.put(`${API_URL}/api/tasks/${editTask._id}`, {
         ...editTask,
         title: newTitle,
       });
